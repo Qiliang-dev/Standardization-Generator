@@ -165,6 +165,36 @@ textarea { resize: vertical; min-height: 80px; font-family: inherit; }
   align-self: start;
 }
 
+.floating-checklist {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: min(360px, calc(100vw - 36px));
+  z-index: 12;
+  background: linear-gradient(180deg, rgba(255, 122, 24, 0.1), rgba(13, 26, 52, 0.96));
+  border: 1px solid rgba(255, 122, 24, 0.35);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  padding: 12px 14px;
+  backdrop-filter: blur(6px);
+}
+
+.floating-checklist h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.floating-checklist ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #dbe7ff;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .modal.hidden { display: none; }
 .modal {
   position: fixed;
@@ -226,9 +256,19 @@ textarea { resize: vertical; min-height: 80px; font-family: inherit; }
   .actions { width: 100%; justify-content: flex-end; }
   .preview-panel { position: static; top: auto; }
   .preview-panel pre { max-height: none; }
+  .floating-checklist {
+    right: 16px;
+    left: 16px;
+    bottom: 12px;
+    width: auto;
+    max-height: 38vh;
+    overflow-y: auto;
+  }
 }
 
 @media (max-width: 640px) {
   .topbar { flex-direction: column; }
   .actions { justify-content: flex-start; }
+  .floating-checklist h3 { font-size: 14px; }
+  .floating-checklist ul { font-size: 12px; }
 }
