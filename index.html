@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Standardization Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Document Builder</p>
+        <h1>Standardization Generator</h1>
+        <p class="subtitle">快速生成清晰的测试问题报告，实时预览并自动记忆常用字段。</p>
+      </div>
+      <div class="mode-toggle" id="mode-toggle">
+        <button type="button" data-mode="bug" class="primary">Bug Report</button>
+        <button type="button" data-mode="test" class="ghost">Test Doku</button>
+      </div>
+      <div class="actions">
+        <button id="load-sample" class="ghost">填充示例</button>
+        <button id="clear-form" class="ghost">清空</button>
+        <button id="copy-html" class="primary">复制 Jira 富文本</button>
+        <button id="copy-md" class="primary">复制 Markdown</button>
+        <button id="download-md" class="primary">导出 .md</button>
+        <button id="open-import" class="ghost">导入粘贴</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="panel form-panel">
+        <div class="panel-header">
+          <h2>填写信息</h2>
+          <p>主要标题始终在上方，次要内容可复用历史输入。</p>
+        </div>
+
+        <form id="doc-form">
+          <!-- Bug Report form -->
+          <div class="bug-section">
+          <div class="grid two">
+            <div class="form-group">
+              <label for="title">Issue Title / Summary</label>
+              <textarea id="title" name="title" rows="2" class="compact" data-field-key="title" placeholder="简短的标题，例如：Zoom 来电未在 X-Call 时阻断"></textarea>
+              <div class="suggestions" data-for="title"></div>
+            </div>
+            <div class="form-group">
+              <label for="timestamp">Time stamp</label>
+              <textarea id="timestamp" name="timestamp" rows="2" class="compact" data-field-key="timestamp" placeholder="例如：2026-02-06 14:30 CET"></textarea>
+              <div class="suggestions" data-for="timestamp"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="issueDescription">Issue Description</label>
+            <textarea id="issueDescription" name="issueDescription" rows="3" data-field-key="issueDescription" placeholder="描述问题场景和期望行为差异"></textarea>
+            <div class="suggestions" data-for="issueDescription"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Tested SW Version</label>
+            <div class="grid two">
+              <div class="form-group nested">
+                <label for="rack">Rack</label>
+                <textarea id="rack" rows="2" class="compact" data-field-key="rack" placeholder="如：CE_SP25_11"></textarea>
+                <div class="suggestions" data-for="rack"></div>
+              </div>
+              <div class="form-group nested">
+                <label for="idcevo">IDCevo SW</label>
+                <textarea id="idcevo" rows="2" class="compact" data-field-key="idcevo" placeholder="如：Bmw_idcevo_userdebug 14"></textarea>
+                <div class="suggestions" data-for="idcevo"></div>
+              </div>
+              <div class="form-group nested">
+                <label for="cde">CDE SW</label>
+                <textarea id="cde" rows="2" class="compact" data-field-key="cde" placeholder="如：Bmw_cde-userdebug 14 ..."></textarea>
+                <div class="suggestions" data-for="cde"></div>
+              </div>
+              <div class="form-group nested">
+                <label for="rse">RSE</label>
+                <textarea id="rse" rows="2" class="compact" data-field-key="rse" placeholder="如：BMW RSE26-rse26..."></textarea>
+                <div class="suggestions" data-for="rse"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="pdx">PDX Version (one per line)</label>
+            <textarea id="pdx" rows="3" data-field-key="pdx" placeholder="每行一个链接或版本号"></textarea>
+            <div class="suggestions" data-for="pdx"></div>
+          </div>
+
+          <div class="grid two">
+            <div class="form-group">
+              <label for="phoneApp">Phone app</label>
+              <textarea id="phoneApp" rows="2" class="compact" data-field-key="phoneApp" placeholder="如：2607.2603.1"></textarea>
+              <div class="suggestions" data-for="phoneApp"></div>
+            </div>
+            <div class="form-group">
+              <label for="pentApp">PEnt phone App / 3rd Party App Version</label>
+              <textarea id="pentApp" rows="2" class="compact" data-field-key="pentApp" placeholder="如：Zoom app: 1.0.8.6RC7; PENT: 0.8.0"></textarea>
+              <div class="suggestions" data-for="pentApp"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="devices">Mobile devices used (one per line)</label>
+            <textarea id="devices" rows="2" data-field-key="devices" placeholder="例如：iPhone 16 Pro (iOS 26.2)"></textarea>
+            <div class="suggestions" data-for="devices"></div>
+          </div>
+
+          <div class="grid three">
+            <div class="form-group">
+              <label for="occPerLc">Number of occurrences per LC</label>
+              <input id="occPerLc" type="text" data-field-key="occPerLc" placeholder="如：3">
+              <div class="suggestions" data-for="occPerLc"></div>
+            </div>
+            <div class="form-group">
+              <label for="lcTested">Number of LCs tested</label>
+              <input id="lcTested" type="text" data-field-key="lcTested" placeholder="如：3">
+              <div class="suggestions" data-for="lcTested"></div>
+            </div>
+            <div class="form-group">
+              <label for="lcObserved">In how many LCs was this issue observed?</label>
+              <input id="lcObserved" type="text" data-field-key="lcObserved" placeholder="如：3">
+              <div class="suggestions" data-for="lcObserved"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="precondition">Precondition</label>
+            <textarea id="precondition" rows="3" data-field-key="precondition" placeholder="列出前置条件，建议分行"></textarea>
+            <div class="suggestions" data-for="precondition"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="steps">Steps to reproduce</label>
+            <textarea id="steps" rows="4" data-field-key="steps" placeholder="每行一步骤"></textarea>
+            <div class="suggestions" data-for="steps"></div>
+          </div>
+
+          <div class="grid two">
+            <div class="form-group">
+              <label for="expected">Expected Behavior</label>
+              <textarea id="expected" rows="3" data-field-key="expected" placeholder="期望行为"></textarea>
+              <div class="suggestions" data-for="expected"></div>
+            </div>
+            <div class="form-group">
+              <label for="observed">Observed Behavior</label>
+              <textarea id="observed" rows="3" data-field-key="observed" placeholder="实际观察"></textarea>
+              <div class="suggestions" data-for="observed"></div>
+            </div>
+          </div>
+
+          <div class="grid two">
+            <div class="form-group">
+              <label for="recovery">Recovery possible? If yes, detail steps</label>
+              <textarea id="recovery" rows="2" class="compact" data-field-key="recovery" placeholder="例如：No / Yes - reboot ..."></textarea>
+              <div class="suggestions" data-for="recovery"></div>
+            </div>
+            <div class="form-group">
+              <label for="testCaseId">Test case ID</label>
+              <textarea id="testCaseId" rows="2" class="compact" data-field-key="testCaseId" placeholder="如：IDCEVODEV-423170"></textarea>
+              <div class="suggestions" data-for="testCaseId"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="teamsLink">Link to test execution request (Teams)</label>
+            <textarea id="teamsLink" rows="2" class="compact" data-field-key="teamsLink" placeholder="Teams 链接"></textarea>
+            <div class="suggestions" data-for="teamsLink"></div>
+          </div>
+
+          <div class="grid two">
+            <div class="form-group">
+              <label for="relatedCase">Related Test Case / Context</label>
+              <textarea id="relatedCase" rows="2" class="compact" data-field-key="relatedCase" placeholder="如：Test Run: IDCEVODEV-843215"></textarea>
+              <div class="suggestions" data-for="relatedCase"></div>
+            </div>
+            <div class="form-group">
+              <label for="notes">Notes</label>
+              <textarea id="notes" rows="2" class="compact" data-field-key="notes" placeholder="可选备注"></textarea>
+              <div class="suggestions" data-for="notes"></div>
+            </div>
+          </div>
+          </div>
+
+          <!-- Test Doku form -->
+          <div class="test-section">
+            <div class="grid two">
+              <div class="form-group">
+                <label for="cwWeek">CW</label>
+                <textarea id="cwWeek" rows="2" class="compact" data-field-key="cwWeek" placeholder="例如：CW07"></textarea>
+                <div class="suggestions" data-for="cwWeek"></div>
+              </div>
+              <div class="form-group">
+                <label for="resourceInfo">Day / Resources</label>
+                <textarea id="resourceInfo" rows="2" class="compact" data-field-key="resourceInfo" placeholder="例如：Wednesday: Two Resources: Qiliang Yu & Seeta Desaraju"></textarea>
+                <div class="suggestions" data-for="resourceInfo"></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="testTask">Test Task</label>
+              <textarea id="testTask" rows="3" data-field-key="testTask" placeholder="例如：Adhoc: ...&#10;IDCEVODEV-868113 ..."></textarea>
+              <div class="suggestions" data-for="testTask"></div>
+            </div>
+
+            <div class="grid two">
+              <div class="form-group">
+                <label for="rackVehicle">Rack / Vehicle</label>
+                <textarea id="rackVehicle" rows="2" class="compact" data-field-key="rackVehicle" placeholder="如：CE_SP25_21"></textarea>
+                <div class="suggestions" data-for="rackVehicle"></div>
+              </div>
+              <div class="form-group">
+                <label for="platform">Platform</label>
+                <textarea id="platform" rows="2" class="compact" data-field-key="platform" placeholder="例如：G70, V-721713, EMEA INT"></textarea>
+                <div class="suggestions" data-for="platform"></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="vin">VIN</label>
+              <textarea id="vin" rows="2" class="compact" data-field-key="vin" placeholder="例如：WBY61HY090CV46920"></textarea>
+              <div class="suggestions" data-for="vin"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="swDetails">SW Details (one per line)</label>
+              <textarea id="swDetails" rows="4" data-field-key="swDetails" placeholder="例如：Zoom for Cars 1.0.8.6RC7 (IDC/CDE)&#10;Zoom for Cars 1.0.8.6RC4 (RSE)&#10;IDCevo: ..."></textarea>
+              <div class="suggestions" data-for="swDetails"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="apkVersion">APK Version</label>
+              <textarea id="apkVersion" rows="2" class="compact" data-field-key="apkVersion" placeholder="如：2507.2530.2"></textarea>
+              <div class="suggestions" data-for="apkVersion"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="mobileDevices">MD's / Mobile Devices (one per line)</label>
+              <textarea id="mobileDevices" rows="2" data-field-key="mobileDevices" placeholder="iPhone 16 Pro (iOS-Version: 18.5)"></textarea>
+              <div class="suggestions" data-for="mobileDevices"></div>
+            </div>
+
+            <div class="grid four">
+              <div class="form-group">
+                <label for="testTotal">Test Results - Total</label>
+                <textarea id="testTotal" rows="2" class="compact" data-field-key="testTotal" placeholder="207"></textarea>
+                <div class="suggestions" data-for="testTotal"></div>
+              </div>
+              <div class="form-group">
+                <label for="testPassed">Passed</label>
+                <textarea id="testPassed" rows="2" class="compact" data-field-key="testPassed" placeholder="167"></textarea>
+                <div class="suggestions" data-for="testPassed"></div>
+              </div>
+              <div class="form-group">
+                <label for="testFailed">Failed</label>
+                <textarea id="testFailed" rows="2" class="compact" data-field-key="testFailed" placeholder="0"></textarea>
+                <div class="suggestions" data-for="testFailed"></div>
+              </div>
+              <div class="form-group">
+                <label for="testAborted">Aborted</label>
+                <textarea id="testAborted" rows="2" class="compact" data-field-key="testAborted" placeholder="40"></textarea>
+                <div class="suggestions" data-for="testAborted"></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="findings">Findings (overview)</label>
+              <textarea id="findings" rows="2" data-field-key="findings" placeholder="简要总结或留空"></textarea>
+              <div class="suggestions" data-for="findings"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="newTickets">New created tickets (one per line)</label>
+              <textarea id="newTickets" rows="4" data-field-key="newTickets" placeholder="Outgoing call ... ---> IDCEVODEV-XXXXX"></textarea>
+              <div class="suggestions" data-for="newTickets"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="existingTickets">Already existing tickets (one per line)</label>
+              <textarea id="existingTickets" rows="6" data-field-key="existingTickets" placeholder="Incoming call ... ---> IDCEVODEV-XXXXX"></textarea>
+              <div class="suggestions" data-for="existingTickets"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="abortedList">Aborted (one per line)</label>
+              <textarea id="abortedList" rows="4" data-field-key="abortedList" placeholder="4 Speedlock tests"></textarea>
+              <div class="suggestions" data-for="abortedList"></div>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel preview-panel">
+        <div class="panel-header">
+          <div>
+            <h2>实时预览</h2>
+            <p>内容将按最终输出格式呈现，可直接复制。</p>
+          </div>
+          <button id="copy-preview" class="ghost">复制预览</button>
+        </div>
+        <pre id="preview"></pre>
+      </section>
+    </main>
+  </div>
+
+  <div id="import-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>从粘贴文本导入</h3>
+        <p>把 Jira/Markdown 描述粘贴到下方，点击“解析填充”自动写入表单。</p>
+      </div>
+      <textarea id="import-text" rows="12" placeholder="在此粘贴完整描述..."></textarea>
+      <div class="modal-actions">
+        <button id="cancel-import" class="ghost">取消</button>
+        <button id="parse-import" class="primary">解析填充</button>
+      </div>
+    </div>
+  </div>
+
+  <template id="sample-data">
+    {
+      "bug": {
+        "title": "External Zoom incoming call not blocked during ongoing X-Call",
+        "timestamp": "2026-02-06 15:20 CET",
+        "issueDescription": "During an ongoing X-Call on IDCevo, an external Zoom/HFP incoming call can still be received. This breaks the expected cross-ECU call-handling rule that should block other calls.",
+        "rack": "CE_SP25_11",
+        "idcevo": "Bmw_idcevo_userdebug 14",
+        "cde": "Bmw_cde-userdebug 14 cde-mainline-dirty_10333537_2_62fed7",
+        "rse": "BMW RSE26-rse26-rse26-mainline_26w04.7-1",
+        "pdx": "https://idcevo.artifactory.cc.bmwgroup.net/ui/native/idcevo-platform-build/check/gerrit/10333537/2026-01-26-15-13-40/system-assembly/userdebug_DEV\nhttps://idcevo.artifactory.cc.bmwgroup.net/ui/native/idcevo-platform-build/check/gerrit/10333538/2026-01-26-15-16-06/system-assembly/userdebug_DEV\nhttps://idcevo.artifactory.cc.bmwgroup.net/ui/native/idcevo-platform-build/check/gerrit/10333539/2026-01-26-15-13-41/system-assembly/userdebug_DEV",
+        "phoneApp": "2607.2603.1",
+        "pentApp": "Zoom app: 1.0.8.6RC7; PENT: 0.8.0",
+        "devices": "iPhone 16 Pro (iOS 26.2)\nPixel 6 Pro (Android 15)",
+        "occPerLc": "3",
+        "lcTested": "3",
+        "lcObserved": "3",
+        "precondition": "Mobile device paired to IDCevo and BT telephony enabled.\nCross-ECU setup is available (IDCevo + CDE).\nZoom for Cars is installed and logged in.",
+        "steps": "Start an X-Call on IDCevo (establish on IDCevo/CID).\nFrom an external device, place a normal phone call (Zoom incoming) to the paired mobile device / vehicle.\nObserve behavior on IDCevo during ongoing X-Call.",
+        "expected": "While an X-Call is ongoing on IDCevo, external Zoom incoming calls should be blocked (no UI/ringing/accept option).",
+        "observed": "External Zoom incoming calls are still received during an ongoing X-Call on IDCevo.",
+        "recovery": "No",
+        "testCaseId": "IDCEVODEV-423170",
+        "teamsLink": "https://teams.microsoft.com/l/message/19:vl7NGKPvRoDDQj59ly_rDYfCgGq5CirZ70YbR-72LQ01@thread.tacv2/1769603956242?tenantId=ce849bab-cc1c-465b-b62e-18f07c9ac198&groupId=04429c85-973a-48f6-b569-715f84fc8a50&parentMessageId=1769603956242&teamName=IDC%20Technica%20Testing&channelName=Common&createdTime=1769603956242",
+        "relatedCase": "Test Run: IDCEVODEV-843215",
+        "notes": ""
+      },
+      "test": {
+        "cwWeek": "CW07",
+        "resourceInfo": "Wednesday: Two Resources: Qiliang Yu & Seeta Desaraju",
+        "testTask": "Adhoc: Performance tests for Video Call\nIDCEVODEV-868113 Adhoc: Performance Tests for VideoCall to compare CPU load with Dingtalk - CodeCraft Jira",
+        "rackVehicle": "CE_SP25_21",
+        "platform": "G70, V-721713, EMEA INT",
+        "vin": "WBY61HY090CV46920",
+        "swDetails": "Zoom for Cars 1.0.8.6RC7 (IDC/CDE)\nZoom for Cars 1.0.8.6RC4 (RSE)\nIDCevo: idcevo_b1-pu2607-26W06.2-2\nRSE: 2607_i480-26w06.7-1\nCDE: 2607_i480-26w06.7-2",
+        "apkVersion": "2507.2530.2",
+        "mobileDevices": "Iphone 14 Plus - iOS 26.2\niPhone 16 Pro - iOS 26.2\nXiaomi 13T Pro - Android 15\nGalaxy S24 - Android 16",
+        "testTotal": "207",
+        "testPassed": "167",
+        "testFailed": "0",
+        "testAborted": "40",
+        "findings": "Noticed that the small screen does not show the mute button on all three screens. Is this as expected?\nNo Performance related issues detected.",
+        "newTickets": "Outgoing call doesn't start from an available connected device after tapping on contact shortcuts ---> IDCEVODEV-598226\nOutgoing call from a CP device doesn't start after pressing the Phone button on SWAG ---> IDCEVODEV-598172",
+        "existingTickets": "Incoming call to a CarPlay device disconnects the device from the IDC target ---> IDCEVODEV-578119\nNo toast message shown indicating that a call is in progress when 2 calls are already ongoing ---> IDCEVODEV-581046",
+        "abortedList": "4 Speedlock tests\n4 BMT tests\n3 Headrest tests"
+      }
+    }
+  </template>
+
+  <script src="parser.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
