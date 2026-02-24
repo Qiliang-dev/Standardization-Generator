@@ -11,6 +11,7 @@
   const HISTORY_KEY = "docgen-history-v1";
   const SAVE_KEY_BUG = "docgen-current-v1-bug";
   const SAVE_KEY_TEST = "docgen-current-v1-test";
+  const OCCURRENCE_KEYS = ["occPerLc", "lcTested", "lcObserved"];
   let history = loadHistory();
   let currentMode = "bug";
 
@@ -28,6 +29,9 @@
     el.addEventListener("focus", () => renderSuggestionsFor(key, el.value));
 
     el.addEventListener("blur", () => {
+      if (OCCURRENCE_KEYS.includes(key)) {
+        ensureOccurrenceDefaults();
+      }
       addToHistory(key, el.value);
       renderSuggestionsFor(key, "");
     });
@@ -50,7 +54,8 @@
   modeButtons.forEach((btn) => btn.addEventListener("click", () => setMode(btn.dataset.mode)));
 
   setMode("bug");
-  syncCurrentCwWeekOnLoad();
+  ensureCwWeekPrefilled({ force: true });
+  ensureOccurrenceDefaults({ force: true });
 
   /* Core rendering */
   function renderPreview() {
@@ -68,16 +73,32 @@
     return data;
   }
 
-  function syncCurrentCwWeekOnLoad() {
+  function ensureCwWeekPrefilled(options = {}) {
+    const force = Boolean(options.force);
     const cwValue = getCurrentCwLabel();
     const cwField = document.querySelector('[data-field-key="cwWeek"]');
-    if (cwField) cwField.value = cwValue;
+    if (!cwField) return;
+    if (force || !cwField.value.trim()) cwField.value = cwValue;
     try {
       const savedTest = JSON.parse(localStorage.getItem(SAVE_KEY_TEST) || "{}");
-      localStorage.setItem(SAVE_KEY_TEST, JSON.stringify({ ...savedTest, cwWeek: cwValue, mode: "test" }));
+      localStorage.setItem(
+        SAVE_KEY_TEST,
+        JSON.stringify({ ...savedTest, cwWeek: cwField.value.trim() || cwValue, mode: "test" })
+      );
     } catch (err) {
       console.warn("CW prefill failed", err);
     }
+  }
+
+  function ensureOccurrenceDefaults(options = {}) {
+    const force = Boolean(options.force);
+    OCCURRENCE_KEYS.forEach((key) => {
+      const field = document.querySelector(`[data-field-key="${key}"]`);
+      if (!field) return;
+      if (force || !field.value.trim()) {
+        field.value = "3";
+      }
+    });
   }
 
   function getCurrentCwLabel(date = new Date()) {
@@ -757,6 +778,8 @@
   /* Buttons */
   function clearForm() {
     form.reset();
+    ensureCwWeekPrefilled({ force: currentMode === "test" });
+    ensureOccurrenceDefaults({ force: true });
     autosave();
     renderPreview();
     onScrollSync();
@@ -950,6 +973,8 @@
     document.body.classList.toggle("mode-test", mode === "test");
     modeButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.mode === mode));
     restoreAutosave();
+    ensureOccurrenceDefaults();
+    if (mode === "test") ensureCwWeekPrefilled();
     renderPreview();
     renderAllSuggestionBars();
     onScrollSync();
