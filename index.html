@@ -309,8 +309,19 @@
   </div>
 
   <aside class="floating-checklist" aria-label="提单检查清单">
-    <h3>提单检查清单</h3>
-    <ul>
+    <div class="floating-checklist-header">
+      <h3>提单检查清单</h3>
+      <button
+        type="button"
+        id="toggle-checklist"
+        class="ghost checklist-toggle"
+        aria-controls="checklist-list"
+        aria-expanded="true"
+      >
+        收起
+      </button>
+    </div>
+    <ul id="checklist-list">
       <li>未附 traces 的 Bug ticket 必须先设为 Pending。</li>
       <li>任务 ticket 完成并在 Teams defect 发布后，再设为 Close。</li>
       <li>每个 Bug ticket 的traces不少于10分钟。</li>

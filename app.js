@@ -7,10 +7,13 @@
   const importTextarea = document.getElementById("import-text");
   const modeToggle = document.getElementById("mode-toggle");
   const modeButtons = modeToggle.querySelectorAll("[data-mode]");
+  const checklistEl = document.querySelector(".floating-checklist");
+  const checklistToggleBtn = document.getElementById("toggle-checklist");
 
   const HISTORY_KEY = "docgen-history-v1";
   const SAVE_KEY_BUG = "docgen-current-v1-bug";
   const SAVE_KEY_TEST = "docgen-current-v1-test";
+  const CHECKLIST_COLLAPSED_KEY = "docgen-checklist-collapsed-v1";
   const OCCURRENCE_KEYS = ["occPerLc", "lcTested", "lcObserved"];
   let history = loadHistory();
   let currentMode = "bug";
@@ -47,6 +50,9 @@
   document.getElementById("cancel-import").addEventListener("click", closeImportModal);
   document.getElementById("parse-import").addEventListener("click", parseImport);
   document.querySelector(".modal-backdrop").addEventListener("click", closeImportModal);
+  if (checklistEl && checklistToggleBtn) {
+    checklistToggleBtn.addEventListener("click", toggleChecklist);
+  }
   window.addEventListener("scroll", onScrollSync, { passive: true });
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !importModal.classList.contains("hidden")) closeImportModal();
@@ -56,6 +62,7 @@
   setMode("bug");
   ensureCwWeekPrefilled({ force: true });
   ensureOccurrenceDefaults({ force: true });
+  restoreChecklistState();
 
   /* Core rendering */
   function renderPreview() {
@@ -692,6 +699,39 @@
 
   function clamp(v, min, max) {
     return Math.min(max, Math.max(min, v));
+  }
+
+  function setChecklistCollapsed(collapsed) {
+    if (!checklistEl || !checklistToggleBtn) return;
+    checklistEl.classList.toggle("collapsed", collapsed);
+    checklistToggleBtn.textContent = collapsed ? "展开" : "收起";
+    checklistToggleBtn.setAttribute("aria-expanded", String(!collapsed));
+    checklistToggleBtn.setAttribute(
+      "aria-label",
+      collapsed ? "展开提单检查清单" : "收起提单检查清单"
+    );
+  }
+
+  function restoreChecklistState() {
+    if (!checklistEl || !checklistToggleBtn) return;
+    let collapsed = false;
+    try {
+      collapsed = localStorage.getItem(CHECKLIST_COLLAPSED_KEY) === "1";
+    } catch (err) {
+      console.warn("Checklist state load failed", err);
+    }
+    setChecklistCollapsed(collapsed);
+  }
+
+  function toggleChecklist() {
+    if (!checklistEl) return;
+    const collapsed = !checklistEl.classList.contains("collapsed");
+    setChecklistCollapsed(collapsed);
+    try {
+      localStorage.setItem(CHECKLIST_COLLAPSED_KEY, collapsed ? "1" : "0");
+    } catch (err) {
+      console.warn("Checklist state save failed", err);
+    }
   }
 
   /* History + suggestions */

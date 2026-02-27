@@ -179,8 +179,16 @@ textarea { resize: vertical; min-height: 80px; font-family: inherit; }
   backdrop-filter: blur(6px);
 }
 
+.floating-checklist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
 .floating-checklist h3 {
-  margin: 0 0 8px;
+  margin: 0;
   font-size: 15px;
 }
 
@@ -193,6 +201,26 @@ textarea { resize: vertical; min-height: 80px; font-family: inherit; }
   color: #dbe7ff;
   font-size: 13px;
   line-height: 1.45;
+}
+
+.checklist-toggle {
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 8px;
+  line-height: 1.2;
+}
+
+.floating-checklist.collapsed {
+  width: auto;
+  padding: 10px 12px;
+}
+
+.floating-checklist.collapsed .floating-checklist-header {
+  margin-bottom: 0;
+}
+
+.floating-checklist.collapsed ul {
+  display: none;
 }
 
 .modal.hidden { display: none; }
