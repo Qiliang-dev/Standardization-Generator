@@ -16,6 +16,7 @@
         <p class="eyebrow">Document Builder</p>
         <h1>Standardization Generator</h1>
         <p class="subtitle">快速生成清晰的测试问题报告，实时预览并自动记忆常用字段。</p>
+        <p class="cw-indicator">Current CW <span id="current-cw" class="cw-badge">--</span></p>
       </div>
       <div class="mode-toggle" id="mode-toggle">
         <button type="button" data-mode="bug" class="primary">Bug Report</button>
@@ -27,7 +28,6 @@
         <button id="copy-html" class="primary">复制 Jira 富文本</button>
         <button id="copy-md" class="primary">复制 Markdown</button>
         <button id="download-md" class="primary">导出 .md</button>
-        <button id="open-import" class="ghost">导入粘贴</button>
       </div>
     </header>
 
@@ -189,17 +189,10 @@
 
           <!-- Test Doku form -->
           <div class="test-section">
-            <div class="grid two">
-              <div class="form-group">
-                <label for="cwWeek">CW</label>
-                <textarea id="cwWeek" rows="2" class="compact" data-field-key="cwWeek" placeholder="例如：CW07"></textarea>
-                <div class="suggestions" data-for="cwWeek"></div>
-              </div>
-              <div class="form-group">
-                <label for="resourceInfo">Day / Resources</label>
-                <textarea id="resourceInfo" rows="2" class="compact" data-field-key="resourceInfo" placeholder="例如：Wednesday: Two Resources: Qiliang Yu & Seeta Desaraju"></textarea>
-                <div class="suggestions" data-for="resourceInfo"></div>
-              </div>
+            <div class="form-group">
+              <label for="tester">Tester</label>
+              <textarea id="tester" rows="2" class="compact" data-field-key="tester" placeholder="例如：Qiliang Yu"></textarea>
+              <div class="suggestions" data-for="tester"></div>
             </div>
 
             <div class="form-group">
@@ -270,7 +263,7 @@
 
             <div class="form-group">
               <label for="findings">Findings (overview)</label>
-              <textarea id="findings" rows="2" data-field-key="findings" placeholder="简要总结或留空"></textarea>
+              <textarea id="findings" rows="2" data-field-key="findings" placeholder="No new findings">No new findings</textarea>
               <div class="suggestions" data-for="findings"></div>
             </div>
 
@@ -287,7 +280,7 @@
             </div>
 
             <div class="form-group">
-              <label for="abortedList">Aborted (one per line)</label>
+              <label for="abortedList">Tested Scenarios (one per line)</label>
               <textarea id="abortedList" rows="4" data-field-key="abortedList" placeholder="4 Speedlock tests"></textarea>
               <div class="suggestions" data-for="abortedList"></div>
             </div>
@@ -306,6 +299,7 @@
         <pre id="preview"></pre>
       </section>
     </main>
+
   </div>
 
   <aside class="floating-checklist" aria-label="提单检查清单">
@@ -323,27 +317,12 @@
     </div>
     <ul id="checklist-list">
       <li>未附 traces 的 Bug ticket 必须先设为 Pending。</li>
-      <li>任务 ticket 完成并在 Teams defect 发布后，再设为 Close。</li>
-      <li>每个 Bug ticket 的traces不少于10分钟。</li>
-      <li>Vehicle ticket 必须带 car label 如Com_Reg_26w06/Com_Vehicle_26w09</li>
+      <li>Test Doku 完成后：若 ticket 已在 Teams Common 频道出现，则在 Common 频道回复；若未出现，则在 defect 频道回复；完成后再设为 Close。</li>
+      <li>xoraya trace 需要提前 5 分钟开启，录像记录后 5 分钟结束；音频错误需要在录像开始前按下 Trigger。</li>
+      <li>仅 Bug report 需要带 car label，如 Com_Reg_26w06/Com_Vehicle_26w09。</li>
       <li>Reporter 不可是 Alexandra。</li>
     </ul>
   </aside>
-
-  <div id="import-modal" class="modal hidden">
-    <div class="modal-backdrop"></div>
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>从粘贴文本导入</h3>
-        <p>把 Jira/Markdown 描述粘贴到下方，点击“解析填充”自动写入表单。</p>
-      </div>
-      <textarea id="import-text" rows="12" placeholder="在此粘贴完整描述..."></textarea>
-      <div class="modal-actions">
-        <button id="cancel-import" class="ghost">取消</button>
-        <button id="parse-import" class="primary">解析填充</button>
-      </div>
-    </div>
-  </div>
 
   <template id="sample-data">
     {
@@ -373,8 +352,7 @@
         "notes": ""
       },
       "test": {
-        "cwWeek": "CW07",
-        "resourceInfo": "Wednesday: Two Resources: Qiliang Yu & Seeta Desaraju",
+        "tester": "Qiliang Yu & Seeta Desaraju",
         "testTask": "Adhoc: Performance tests for Video Call\nIDCEVODEV-868113 Adhoc: Performance Tests for VideoCall to compare CPU load with Dingtalk - CodeCraft Jira",
         "rackVehicle": "CE_SP25_21",
         "platform": "G70, V-721713, EMEA INT",
@@ -394,7 +372,19 @@
     }
   </template>
 
-  <script src="parser.js"></script>
+  <script>
+    (function () {
+      const el = document.getElementById("current-cw");
+      if (!el) return;
+      const date = new Date();
+      const target = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      const dayNum = target.getUTCDay() || 7;
+      target.setUTCDate(target.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+      const week = Math.ceil(((target - yearStart) / 86400000 + 1) / 7);
+      el.textContent = `CW${String(week).padStart(2, "0")}`;
+    })();
+  </script>
   <script src="app.js"></script>
 </body>
 </html>

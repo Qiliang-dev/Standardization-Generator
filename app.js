@@ -3,17 +3,17 @@
   const previewEl = document.getElementById("preview");
   const form = document.getElementById("doc-form");
   const sampleTemplate = document.getElementById("sample-data");
-  const importModal = document.getElementById("import-modal");
-  const importTextarea = document.getElementById("import-text");
   const modeToggle = document.getElementById("mode-toggle");
   const modeButtons = modeToggle.querySelectorAll("[data-mode]");
   const checklistEl = document.querySelector(".floating-checklist");
   const checklistToggleBtn = document.getElementById("toggle-checklist");
+  const currentCwEl = document.getElementById("current-cw");
 
   const HISTORY_KEY = "docgen-history-v1";
   const SAVE_KEY_BUG = "docgen-current-v1-bug";
   const SAVE_KEY_TEST = "docgen-current-v1-test";
   const CHECKLIST_COLLAPSED_KEY = "docgen-checklist-collapsed-v1";
+  const FINDINGS_DEFAULT = "No new findings";
   const OCCURRENCE_KEYS = ["occPerLc", "lcTested", "lcObserved"];
   let history = loadHistory();
   let currentMode = "bug";
@@ -46,23 +46,16 @@
   document.getElementById("download-md").addEventListener("click", downloadMarkdown);
   document.getElementById("clear-form").addEventListener("click", clearForm);
   document.getElementById("load-sample").addEventListener("click", loadSample);
-  document.getElementById("open-import").addEventListener("click", openImportModal);
-  document.getElementById("cancel-import").addEventListener("click", closeImportModal);
-  document.getElementById("parse-import").addEventListener("click", parseImport);
-  document.querySelector(".modal-backdrop").addEventListener("click", closeImportModal);
   if (checklistEl && checklistToggleBtn) {
     checklistToggleBtn.addEventListener("click", toggleChecklist);
   }
   window.addEventListener("scroll", onScrollSync, { passive: true });
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !importModal.classList.contains("hidden")) closeImportModal();
-  });
   modeButtons.forEach((btn) => btn.addEventListener("click", () => setMode(btn.dataset.mode)));
 
   setMode("bug");
-  ensureCwWeekPrefilled({ force: true });
   ensureOccurrenceDefaults({ force: true });
   restoreChecklistState();
+  renderCurrentCw();
 
   /* Core rendering */
   function renderPreview() {
@@ -80,23 +73,6 @@
     return data;
   }
 
-  function ensureCwWeekPrefilled(options = {}) {
-    const force = Boolean(options.force);
-    const cwValue = getCurrentCwLabel();
-    const cwField = document.querySelector('[data-field-key="cwWeek"]');
-    if (!cwField) return;
-    if (force || !cwField.value.trim()) cwField.value = cwValue;
-    try {
-      const savedTest = JSON.parse(localStorage.getItem(SAVE_KEY_TEST) || "{}");
-      localStorage.setItem(
-        SAVE_KEY_TEST,
-        JSON.stringify({ ...savedTest, cwWeek: cwField.value.trim() || cwValue, mode: "test" })
-      );
-    } catch (err) {
-      console.warn("CW prefill failed", err);
-    }
-  }
-
   function ensureOccurrenceDefaults(options = {}) {
     const force = Boolean(options.force);
     OCCURRENCE_KEYS.forEach((key) => {
@@ -106,6 +82,18 @@
         field.value = "3";
       }
     });
+  }
+
+  function ensureFindingsDefault(options = {}) {
+    const force = Boolean(options.force);
+    const findingsField = document.querySelector('[data-field-key="findings"]');
+    if (!findingsField) return;
+    if (force || !findingsField.value.trim()) findingsField.value = FINDINGS_DEFAULT;
+  }
+
+  function renderCurrentCw(date = new Date()) {
+    if (!currentCwEl) return;
+    currentCwEl.textContent = getCurrentCwLabel(date);
   }
 
   function getCurrentCwLabel(date = new Date()) {
@@ -228,9 +216,7 @@
     const block = (label, value) => `${bold(label)}\n${value || "--"}`;
 
     const docLines = [
-      block("CW:", d.cwWeek || d.cw),
-      "",
-      block("Day / Resources:", d.resourceInfo || d.sessionInfo),
+      block("Tester(s):", d.tester),
       "",
       block("Test Task:", d.testTask),
       "",
@@ -254,7 +240,7 @@
       `- Failed: ${d.testFailed || "--"}`,
       `- Aborted: ${d.testAborted || "--"}`,
       "",
-      block("Findings:", d.findings),
+      block("Findings:", d.findings || FINDINGS_DEFAULT),
       "",
       bold("New created tickets:"),
       joinNumbered(d.newTickets),
@@ -262,7 +248,7 @@
       bold("Already existing tickets:"),
       joinNumbered(d.existingTickets),
       "",
-      bold("Aborted:"),
+      bold("Tested Scenarios:"),
       joinList(d.abortedList),
     ];
 
@@ -291,8 +277,7 @@
     };
 
     return [
-      `<p><strong>CW:</strong><br>${linkify(d.cwWeek || d.cw || "--")}</p>`,
-      `<p><strong>Day / Resources:</strong><br>${linkify(d.resourceInfo || d.sessionInfo || "--")}</p>`,
+      `<p><strong>Tester(s):</strong><br>${linkify(d.tester || "--")}</p>`,
       `<p><strong>Test Task:</strong><br>${linkify(d.testTask || "--")}</p>`,
       `<p><strong>Rack / Vehicle:</strong><br>${linkify(d.rackVehicle || "--")}</p>`,
       `<p><strong>Platform:</strong><br>${linkify(d.platform || "--")}</p>`,
@@ -306,10 +291,10 @@
         <li>Failed: ${linkify(d.testFailed || "--")}</li>
         <li>Aborted: ${linkify(d.testAborted || "--")}</li>
       </ul>`,
-      `<p><strong>Findings:</strong><br>${linkify(d.findings || "--")}</p>`,
+      `<p><strong>Findings:</strong><br>${linkify(d.findings || FINDINGS_DEFAULT)}</p>`,
       `<p><strong>New created tickets:</strong></p>${listify(d.newTickets, true) || "<p>--</p>"}`,
       `<p><strong>Already existing tickets:</strong></p>${listify(d.existingTickets, true) || "<p>--</p>"}`,
-      `<p><strong>Aborted:</strong></p>${listify(d.abortedList) || "<p>--</p>"}`,
+      `<p><strong>Tested Scenarios:</strong></p>${listify(d.abortedList) || "<p>--</p>"}`,
     ].join("\n");
   }
 
@@ -468,8 +453,7 @@
       out.push("");
     };
 
-    pushBlock("CW:", d.cwWeek || d.cw);
-    pushBlock("Day / Resources:", d.resourceInfo || d.sessionInfo);
+    pushBlock("Tester(s):", d.tester);
     pushBlock("Test Task:", d.testTask);
     pushBlock("Rack / Vehicle:", d.rackVehicle);
     pushBlock("Platform:", d.platform);
@@ -486,10 +470,10 @@
       pushBlock("Aborted:", d.testAborted);
     }
 
-    pushBlock("Findings:", d.findings);
+    pushBlock("Findings:", d.findings || FINDINGS_DEFAULT);
     pushList("New created tickets:", d.newTickets, true);
     pushList("Already existing tickets:", d.existingTickets, true);
-    pushList("Aborted:", d.abortedList);
+    pushList("Tested Scenarios:", d.abortedList);
 
     while (out.length && out[out.length - 1] === "") out.pop();
     return out.join("\n");
@@ -525,8 +509,7 @@
       parts.push(`<p><strong>${label}</strong></p><${tag}>${items}</${tag}>`);
     };
 
-    addBlock("CW:", d.cwWeek || d.cw);
-    addBlock("Day / Resources:", d.resourceInfo || d.sessionInfo);
+    addBlock("Tester(s):", d.tester);
     addBlock("Test Task:", d.testTask);
     addBlock("Rack / Vehicle:", d.rackVehicle);
     addBlock("Platform:", d.platform);
@@ -543,10 +526,10 @@
       addBlock("Aborted:", d.testAborted);
     }
 
-    addBlock("Findings:", d.findings);
+    addBlock("Findings:", d.findings || FINDINGS_DEFAULT);
     addList("New created tickets:", d.newTickets, true);
     addList("Already existing tickets:", d.existingTickets, true);
-    addList("Aborted:", d.abortedList);
+    addList("Tested Scenarios:", d.abortedList);
 
     return parts.join("\n");
   }
@@ -618,58 +601,6 @@
     addBlock("Notes:", d.notes);
 
     return parts.join("\n");
-  }
-
-  /* Import pasted text */
-  const PARSE_FIELDS = window.DocParser.PARSE_FIELDS;
-
-  function openImportModal() {
-    importTextarea.value = "";
-    importModal.classList.remove("hidden");
-    importTextarea.focus();
-  }
-
-  function closeImportModal() {
-    importModal.classList.add("hidden");
-  }
-
-  function parseImport() {
-    const raw = importTextarea.value || "";
-    if (!raw.trim()) {
-      showToast("请先粘贴内容")();
-      return;
-    }
-
-    const data = window.DocParser.parsePastedText(raw, { mode: currentMode });
-    const filledKeys = Object.keys(data).filter((k) => data[k]);
-    if (!filledKeys.length) {
-      showToast("未识别到可用字段，请检查粘贴内容的标签")();
-      return;
-    }
-    closeImportModal();
-    applyParsedData(data);
-    autosave();
-    renderPreview();
-    renderAllSuggestionBars();
-    onScrollSync();
-    showToast(`已导入 ${filledKeys.length} 个字段`)();
-  }
-
-  const FIELD_ALIASES = {
-    lcObserved: ["In how many LCs was this issue observed?"],
-  };
-
-  function parsePastedText(text) {
-    // kept for backward compatibility; now delegates to parser.js
-    return window.DocParser.parsePastedText(text);
-  }
-
-  function applyParsedData(data) {
-    // For any field not present in parsed data, clear it
-    fields.forEach((el) => {
-      const key = el.dataset.fieldKey;
-      el.value = data[key] || "";
-    });
   }
 
   /* Scroll sync: keep preview aligned with form progress */
@@ -818,8 +749,8 @@
   /* Buttons */
   function clearForm() {
     form.reset();
-    ensureCwWeekPrefilled({ force: currentMode === "test" });
     ensureOccurrenceDefaults({ force: true });
+    if (currentMode === "test") ensureFindingsDefault({ force: true });
     autosave();
     renderPreview();
     onScrollSync();
@@ -833,6 +764,7 @@
         const key = el.dataset.fieldKey;
         el.value = sample[key] || "";
       });
+      if (currentMode === "test") ensureFindingsDefault();
       autosave();
       renderPreview();
       renderAllSuggestionBars();
@@ -979,10 +911,7 @@
   ]);
 
   const TEST_FIELDS = new Set([
-    "cw",
-    "sessionInfo",
-    "cwWeek",
-    "resourceInfo",
+    "tester",
     "testTask",
     "rackVehicle",
     "platform",
@@ -1014,7 +943,7 @@
     modeButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.mode === mode));
     restoreAutosave();
     ensureOccurrenceDefaults();
-    if (mode === "test") ensureCwWeekPrefilled();
+    if (mode === "test") ensureFindingsDefault();
     renderPreview();
     renderAllSuggestionBars();
     onScrollSync();

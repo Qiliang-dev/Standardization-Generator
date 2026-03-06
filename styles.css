@@ -44,6 +44,28 @@ body {
 
 .eyebrow { letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); font-size: 12px; margin: 0 0 4px; }
 .subtitle { margin: 4px 0 0; color: var(--muted); }
+.cw-indicator {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cw-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 54px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(45, 212, 191, 0.45);
+  background: rgba(45, 212, 191, 0.15);
+  color: #d2fff8;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
 
 h1 { margin: 0; font-weight: 600; }
 h2 { margin: 0; font-weight: 600; }
@@ -221,45 +243,6 @@ textarea { resize: vertical; min-height: 80px; font-family: inherit; }
 
 .floating-checklist.collapsed ul {
   display: none;
-}
-
-.modal.hidden { display: none; }
-.modal {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  display: grid;
-  place-items: center;
-}
-.modal-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
-}
-.modal-card {
-  position: relative;
-  width: min(720px, 90vw);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px;
-  box-shadow: var(--shadow);
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.modal-header h3 { margin: 0; }
-.modal-header p { margin: 4px 0 0; color: var(--muted); }
-.modal-card textarea {
-  min-height: 260px;
-  resize: vertical;
-}
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
 }
 
 /* Mode visibility */
