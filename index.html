@@ -28,6 +28,7 @@
         <button id="copy-html" class="primary">复制 Jira 富文本</button>
         <button id="copy-md" class="primary">复制 Markdown</button>
         <button id="download-md" class="primary">导出 .md</button>
+        <button id="open-import" type="button" class="ghost">导入粘贴</button>
       </div>
     </header>
 
@@ -64,9 +65,14 @@
             <label>Tested SW Version</label>
             <div class="grid two">
               <div class="form-group nested">
-                <label for="rack">Rack</label>
+                <label for="rack">Rack / Vehicle</label>
                 <textarea id="rack" rows="2" class="compact" data-field-key="rack" placeholder="如：CE_SP25_11"></textarea>
                 <div class="suggestions" data-for="rack"></div>
+              </div>
+              <div class="form-group nested">
+                <label for="bugVin">VIN</label>
+                <textarea id="bugVin" rows="2" class="compact" data-field-key="bugVin" placeholder="例如：WBY61HY090CV46920"></textarea>
+                <div class="suggestions" data-for="bugVin"></div>
               </div>
               <div class="form-group nested">
                 <label for="idcevo">IDCevo SW</label>
@@ -280,7 +286,7 @@
             </div>
 
             <div class="form-group">
-              <label for="abortedList">Tested Scenarios (one per line)</label>
+              <label for="abortedList">Blockers</label>
               <textarea id="abortedList" rows="4" data-field-key="abortedList" placeholder="4 Speedlock tests"></textarea>
               <div class="suggestions" data-for="abortedList"></div>
             </div>
@@ -324,6 +330,21 @@
     </ul>
   </aside>
 
+  <div id="import-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>从粘贴文本导入</h3>
+        <p>把 Jira/Markdown 描述粘贴到下方，点击“解析填充”自动写入表单。</p>
+      </div>
+      <textarea id="import-text" rows="12" placeholder="在此粘贴完整描述..."></textarea>
+      <div class="modal-actions">
+        <button id="cancel-import" type="button" class="ghost">取消</button>
+        <button id="parse-import" type="button" class="primary">解析填充</button>
+      </div>
+    </div>
+  </div>
+
   <template id="sample-data">
     {
       "bug": {
@@ -331,6 +352,7 @@
         "timestamp": "2026-02-06 15:20 CET",
         "issueDescription": "During an ongoing X-Call on IDCevo, an external Zoom/HFP incoming call can still be received. This breaks the expected cross-ECU call-handling rule that should block other calls.",
         "rack": "CE_SP25_11",
+        "bugVin": "WBY61HY090CV46920",
         "idcevo": "Bmw_idcevo_userdebug 14",
         "cde": "Bmw_cde-userdebug 14 cde-mainline-dirty_10333537_2_62fed7",
         "rse": "BMW RSE26-rse26-rse26-mainline_26w04.7-1",

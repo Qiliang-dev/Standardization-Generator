@@ -3,6 +3,8 @@
   const previewEl = document.getElementById("preview");
   const form = document.getElementById("doc-form");
   const sampleTemplate = document.getElementById("sample-data");
+  const importModal = document.getElementById("import-modal");
+  const importTextarea = document.getElementById("import-text");
   const modeToggle = document.getElementById("mode-toggle");
   const modeButtons = modeToggle.querySelectorAll("[data-mode]");
   const checklistEl = document.querySelector(".floating-checklist");
@@ -46,10 +48,31 @@
   document.getElementById("download-md").addEventListener("click", downloadMarkdown);
   document.getElementById("clear-form").addEventListener("click", clearForm);
   document.getElementById("load-sample").addEventListener("click", loadSample);
+  const openImportBtn = document.getElementById("open-import");
+  const cancelImportBtn = document.getElementById("cancel-import");
+  const parseImportBtn = document.getElementById("parse-import");
+  const modalBackdrop = importModal ? importModal.querySelector(".modal-backdrop") : null;
+  if (openImportBtn && importModal && importTextarea) {
+    openImportBtn.addEventListener("click", openImportModal);
+  }
+  if (cancelImportBtn && importModal) {
+    cancelImportBtn.addEventListener("click", closeImportModal);
+  }
+  if (parseImportBtn && importModal && importTextarea) {
+    parseImportBtn.addEventListener("click", parseImport);
+  }
+  if (modalBackdrop && importModal) {
+    modalBackdrop.addEventListener("click", closeImportModal);
+  }
   if (checklistEl && checklistToggleBtn) {
     checklistToggleBtn.addEventListener("click", toggleChecklist);
   }
   window.addEventListener("scroll", onScrollSync, { passive: true });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && importModal && !importModal.classList.contains("hidden")) {
+      closeImportModal();
+    }
+  });
   modeButtons.forEach((btn) => btn.addEventListener("click", () => setMode(btn.dataset.mode)));
 
   setMode("bug");
@@ -144,7 +167,8 @@
       d.issueDescription || "--",
       "",
       bold("Tested SW Version:"),
-      labelBullet("Rack:", d.rack),
+      labelBullet("Rack / Vehicle:", d.rack),
+      labelBullet("VIN:", d.bugVin),
       labelBullet("IDCevo SW:", d.idcevo),
       labelBullet("CDE SW:", d.cde),
       labelBullet("RSE:", d.rse),
@@ -248,7 +272,7 @@
       bold("Already existing tickets:"),
       joinNumbered(d.existingTickets),
       "",
-      bold("Tested Scenarios:"),
+      bold("Blockers:"),
       joinList(d.abortedList),
     ];
 
@@ -294,7 +318,7 @@
       `<p><strong>Findings:</strong><br>${linkify(d.findings || FINDINGS_DEFAULT)}</p>`,
       `<p><strong>New created tickets:</strong></p>${listify(d.newTickets, true) || "<p>--</p>"}`,
       `<p><strong>Already existing tickets:</strong></p>${listify(d.existingTickets, true) || "<p>--</p>"}`,
-      `<p><strong>Tested Scenarios:</strong></p>${listify(d.abortedList) || "<p>--</p>"}`,
+      `<p><strong>Blockers:</strong></p>${listify(d.abortedList) || "<p>--</p>"}`,
     ].join("\n");
   }
 
@@ -341,10 +365,13 @@
 
     parts.push(
       `<p><strong>Issue Description:</strong><br>${linkify(d.issueDescription || "--")}</p>`,
-      `<p><strong>Tested SW Version:</strong></p><ul>${labelledLi("Rack:", d.rack)}${labelledLi(
-        "IDCevo SW:",
-        d.idcevo
-      )}${labelledLi("CDE SW:", d.cde)}${labelledLi("RSE:", d.rse)}</ul>`,
+      `<p><strong>Tested SW Version:</strong></p><ul>${labelledLi("Rack / Vehicle:", d.rack)}${labelledLi(
+        "VIN:",
+        d.bugVin
+      )}${labelledLi("IDCevo SW:", d.idcevo)}${labelledLi("CDE SW:", d.cde)}${labelledLi(
+        "RSE:",
+        d.rse
+      )}</ul>`,
       `<p><strong>PDX Version (only if PDX was tested):</strong></p>${listify(d.pdx) || "<p>--</p>"}`,
       paragraph("Phone app:", d.phoneApp),
       paragraph("PEnt phone App / 3rd Party App Version:", d.pentApp),
@@ -395,9 +422,10 @@
     pushBlock("Title:", d.title);
     pushBlock("Issue Description:", d.issueDescription);
 
-    if (has(d.rack) || has(d.idcevo) || has(d.cde) || has(d.rse)) {
+    if (has(d.rack) || has(d.bugVin) || has(d.idcevo) || has(d.cde) || has(d.rse)) {
       out.push(bold("Tested SW Version:"), "");
-      pushBlock("Rack:", d.rack);
+      pushBlock("Rack / Vehicle:", d.rack);
+      pushBlock("VIN:", d.bugVin);
       pushBlock("IDCevo SW:", d.idcevo);
       pushBlock("CDE SW:", d.cde);
       pushBlock("RSE:", d.rse);
@@ -473,7 +501,7 @@
     pushBlock("Findings:", d.findings || FINDINGS_DEFAULT);
     pushList("New created tickets:", d.newTickets, true);
     pushList("Already existing tickets:", d.existingTickets, true);
-    pushList("Tested Scenarios:", d.abortedList);
+    pushList("Blockers:", d.abortedList);
 
     while (out.length && out[out.length - 1] === "") out.pop();
     return out.join("\n");
@@ -529,7 +557,7 @@
     addBlock("Findings:", d.findings || FINDINGS_DEFAULT);
     addList("New created tickets:", d.newTickets, true);
     addList("Already existing tickets:", d.existingTickets, true);
-    addList("Tested Scenarios:", d.abortedList);
+    addList("Blockers:", d.abortedList);
 
     return parts.join("\n");
   }
@@ -569,9 +597,10 @@
     addBlock("Title:", d.title);
     addBlock("Issue Description:", d.issueDescription);
 
-    if (has(d.rack) || has(d.idcevo) || has(d.cde) || has(d.rse)) {
+    if (has(d.rack) || has(d.bugVin) || has(d.idcevo) || has(d.cde) || has(d.rse)) {
       parts.push("<p><strong>Tested SW Version:</strong></p>");
-      addBlock("Rack:", d.rack);
+      addBlock("Rack / Vehicle:", d.rack);
+      addBlock("VIN:", d.bugVin);
       addBlock("IDCevo SW:", d.idcevo);
       addBlock("CDE SW:", d.cde);
       addBlock("RSE:", d.rse);
@@ -601,6 +630,231 @@
     addBlock("Notes:", d.notes);
 
     return parts.join("\n");
+  }
+
+  /* Import pasted text */
+  const IMPORT_FIELD_SPECS = {
+    bug: [
+      { key: "title", label: "Title", multiline: false },
+      { key: "issueDescription", label: "Issue Description", multiline: true },
+      { key: "rack", label: "Rack / Vehicle", multiline: false, aliases: ["Rack", "Rack/Vehicle"] },
+      { key: "bugVin", label: "VIN", multiline: false },
+      { key: "idcevo", label: "IDCevo SW", multiline: false, aliases: ["IDCevo"] },
+      { key: "cde", label: "CDE SW", multiline: false, aliases: ["CDE"] },
+      { key: "rse", label: "RSE", multiline: false },
+      {
+        key: "pdx",
+        label: "PDX Version (only if PDX was tested)",
+        multiline: true,
+        aliases: ["PDX Version", "PDX"],
+      },
+      { key: "phoneApp", label: "Phone app", multiline: false },
+      {
+        key: "pentApp",
+        label: "PEnt phone App / 3rd Party App Version",
+        multiline: false,
+        aliases: ["PEnt phone App", "3rd Party App Version"],
+      },
+      { key: "devices", label: "Mobile devices used", multiline: true, aliases: ["Mobile Devices"] },
+      { key: "occPerLc", label: "Number of occurrences per LC", multiline: false },
+      { key: "lcTested", label: "Number of LCs tested", multiline: false },
+      {
+        key: "lcObserved",
+        label: "In how many LCs was this issue observed?",
+        multiline: false,
+      },
+      { key: "timestamp", label: "Time stamp", multiline: false },
+      { key: "precondition", label: "Precondition", multiline: true },
+      { key: "steps", label: "Steps to reproduce", multiline: true },
+      { key: "expected", label: "Expected Behavior", multiline: true },
+      { key: "observed", label: "Observed Behavior", multiline: true },
+      {
+        key: "recovery",
+        label: "Recovery possible? If yes, detail steps",
+        multiline: false,
+        aliases: ["Recovery possible"],
+      },
+      { key: "testCaseId", label: "Test case ID", multiline: false },
+      {
+        key: "teamsLink",
+        label: "Link to test execution request in teams channel (if available)",
+        multiline: false,
+        aliases: ["Link to test execution request (Teams)", "Teams link"],
+      },
+      {
+        key: "relatedCase",
+        label: "Related Test Case / Context",
+        multiline: false,
+        aliases: ["Related Test Case"],
+      },
+      { key: "notes", label: "Notes", multiline: true },
+    ],
+    test: [
+      {
+        key: "tester",
+        label: "Tester(s)",
+        multiline: false,
+        aliases: ["Tester", "Testers", "Day / Resources", "Resources / Session", "Resources"],
+      },
+      { key: "testTask", label: "Test Task", multiline: true, aliases: ["Task", "Adhoc"] },
+      { key: "rackVehicle", label: "Rack / Vehicle", multiline: false, aliases: ["Rack/Vehicle"] },
+      { key: "platform", label: "Platform", multiline: false },
+      { key: "vin", label: "VIN", multiline: false },
+      { key: "swDetails", label: "SW", multiline: true, aliases: ["SW Details", "Software"] },
+      { key: "apkVersion", label: "APK Version", multiline: false },
+      {
+        key: "mobileDevices",
+        label: "MD's / Mobile Devices",
+        multiline: true,
+        aliases: ["MDs", "Mobile Devices"],
+      },
+      { key: "testTotal", label: "Total", multiline: false, aliases: ["Test Results - Total"] },
+      { key: "testPassed", label: "Passed", multiline: false },
+      { key: "testFailed", label: "Failed", multiline: false },
+      { key: "testAborted", label: "Aborted", multiline: false },
+      { key: "findings", label: "Findings", multiline: true, aliases: ["Findings (overview)"] },
+      { key: "newTickets", label: "New created tickets", multiline: true },
+      { key: "existingTickets", label: "Already existing tickets", multiline: true },
+      {
+        key: "abortedList",
+        label: "Blockers",
+        multiline: true,
+        aliases: ["Aborted (one per line)", "Tested Scenarios"],
+      },
+    ],
+  };
+
+  function openImportModal() {
+    if (!importModal || !importTextarea) return;
+    importTextarea.value = "";
+    importModal.classList.remove("hidden");
+    importModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    importTextarea.focus();
+  }
+
+  function closeImportModal() {
+    if (!importModal) return;
+    importModal.classList.add("hidden");
+    importModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  }
+
+  function parseImport() {
+    if (!importTextarea) return;
+    const raw = importTextarea.value || "";
+    if (!raw.trim()) {
+      showToast("请先粘贴内容")();
+      return;
+    }
+
+    const data = parsePastedText(raw, { mode: currentMode });
+    const filledKeys = Object.keys(data).filter((k) => (data[k] || "").trim());
+    if (!filledKeys.length) {
+      showToast("未识别到可用字段，请检查粘贴内容的标签")();
+      return;
+    }
+
+    closeImportModal();
+    applyParsedData(data);
+    if (currentMode === "test") ensureFindingsDefault();
+    autosave();
+    renderPreview();
+    renderAllSuggestionBars();
+    onScrollSync();
+    showToast(`已导入 ${filledKeys.length} 个字段`)();
+  }
+
+  function applyParsedData(data) {
+    fields.forEach((el) => {
+      const key = el.dataset.fieldKey;
+      el.value = data[key] || "";
+    });
+  }
+
+  function parsePastedText(text, options = {}) {
+    const mode = options.mode === "test" ? "test" : "bug";
+    const specs = IMPORT_FIELD_SPECS[mode];
+    const specByKey = new Map(specs.map((spec) => [spec.key, spec]));
+    const labelMap = new Map();
+
+    specs.forEach((spec) => {
+      [spec.label, ...(spec.aliases || [])].forEach((label) => {
+        labelMap.set(normalizeLabel(label), spec.key);
+      });
+    });
+
+    const source = (text || "").replace(/\r\n/g, "\n");
+    const lines = source.split("\n");
+    const buffers = {};
+    let currentKey = "";
+    let foundHeading = false;
+    let seenAbortedHeading = false;
+    const leadingLines = [];
+
+    lines.forEach((line) => {
+      const m = line.match(/^\s*(?:[-*]\s*)?(?:\*{1,2})?([^:：\n]+?)(?:\*{1,2})?\s*[:：]\s*(.*)$/);
+      if (m) {
+        const heading = m[1].trim();
+        const headingNorm = normalizeLabel(heading);
+        let key = labelMap.get(headingNorm) || "";
+
+        if (mode === "test" && headingNorm === "aborted") {
+          key = seenAbortedHeading ? "abortedList" : "testAborted";
+          seenAbortedHeading = true;
+        }
+
+        if (key && specByKey.has(key)) {
+          foundHeading = true;
+          currentKey = key;
+          if (!buffers[currentKey]) buffers[currentKey] = [];
+          const rest = (m[2] || "").trim();
+          if (rest) buffers[currentKey].push(rest);
+          return;
+        }
+      }
+
+      if (!foundHeading && line.trim()) {
+        leadingLines.push(line);
+      }
+      if (currentKey) {
+        buffers[currentKey].push(line);
+      }
+    });
+
+    const result = {};
+    specs.forEach((spec) => {
+      const value = cleanupImportValue(buffers[spec.key] || [], spec.multiline);
+      if (value) result[spec.key] = value;
+    });
+
+    if (mode === "bug" && !result.issueDescription && leadingLines.length) {
+      result.issueDescription = cleanupImportValue(leadingLines, true);
+    }
+
+    if (!Object.keys(result).length && source.trim()) {
+      if (mode === "test") result.findings = source.trim();
+      else result.issueDescription = source.trim();
+    }
+
+    return result;
+  }
+
+  function cleanupImportValue(lines, multiline) {
+    const cleaned = (lines || [])
+      .map((line) => line.trim())
+      .map((line) => line.replace(/^[>*-]\s*/, "").replace(/^\d+[.)]\s+/, ""))
+      .filter(Boolean);
+    if (!cleaned.length) return "";
+    return multiline ? cleaned.join("\n") : cleaned.join(" ").trim();
+  }
+
+  function normalizeLabel(label) {
+    return (label || "")
+      .toLowerCase()
+      .replace(/[*`]/g, "")
+      .replace(/\(.*?\)/g, "")
+      .replace(/[^a-z0-9]+/g, "");
   }
 
   /* Scroll sync: keep preview aligned with form progress */
@@ -889,6 +1143,7 @@
     "timestamp",
     "issueDescription",
     "rack",
+    "bugVin",
     "idcevo",
     "cde",
     "rse",

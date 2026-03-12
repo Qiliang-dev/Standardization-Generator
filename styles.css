@@ -25,6 +25,10 @@ body {
   padding: 32px 32px 48px;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 .page { max-width: 1400px; margin: 0 auto; }
 
 .topbar {
@@ -142,7 +146,6 @@ textarea { resize: vertical; min-height: 80px; font-family: inherit; }
 .grid.two { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
 .grid.three { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
 .grid.four { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
-
 .suggestions {
   display: flex;
   flex-wrap: wrap;
@@ -245,6 +248,62 @@ textarea { resize: vertical; min-height: 80px; font-family: inherit; }
   display: none;
 }
 
+.hidden {
+  display: none !important;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  position: relative;
+  z-index: 1;
+  width: min(920px, 100%);
+  max-height: min(80vh, 900px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015)), var(--card);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+.modal-header h3 {
+  margin: 0 0 6px;
+}
+
+.modal-header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+#import-text {
+  min-height: 320px;
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 /* Mode visibility */
 .mode-bug .test-section { display: none; }
 .mode-test .bug-section { display: none; }
@@ -282,4 +341,17 @@ textarea { resize: vertical; min-height: 80px; font-family: inherit; }
   .actions { justify-content: flex-start; }
   .floating-checklist h3 { font-size: 14px; }
   .floating-checklist ul { font-size: 12px; }
+  .modal {
+    padding: 16px;
+  }
+  .modal-card {
+    padding: 18px;
+    max-height: 86vh;
+  }
+  .modal-actions {
+    justify-content: stretch;
+  }
+  .modal-actions button {
+    flex: 1 1 auto;
+  }
 }
